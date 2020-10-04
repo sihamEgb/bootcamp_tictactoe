@@ -24,19 +24,18 @@ class Game extends React.Component{
 	}
 
 		onCellClick = (cellId) => {
-			// console.log("cell clicked",cellId);
-			// debugger;
-			if(this.state.isGameFinished)
-			{
-				return;
-			}
+		
+		
 			// shallow copy array
 			const history = this.state.history.slice(0,this.state.stepIndex+1);
 			// most updated board
 			const current = history[history.length-1];
 			const newBoard = current.board.slice();
-			// console.log("history",newBoard);
 
+			if(this.state.isGameFinished)
+			{
+				return;
+			}
 			newBoard[cellId] = this.signs[this.state.currentPlayerIndex];
 			this.setState({
 				history: history.concat([
@@ -124,9 +123,10 @@ isGameFinished = () => {
 }
 
 	openStep = (index) => {
+		console.log("step index",index);
 		this.setState({
       stepIndex: index,
-			currentPlayerIndex:(index+1)%2,	
+			currentPlayerIndex:(index)%2,	
 		});
 		
 
@@ -137,12 +137,14 @@ isGameFinished = () => {
 		const gameFinished = this.state.isGameFinished;
 		// console.log(this.state.isGameFinished);
 		const current = this.state.history[this.state.stepIndex];
+		console.log("current in render",this.state.history);
+		console.log("step index in render",this.state.stepIndex);
 		const winner = this.getWinner(current.board);
 		const winnerName = gameFinished && winner? `the winner: ${winner}` : "no winner";
 		const steps = this.state.history.map( (steps,index) => {
 			return (<div
 			key={index}
-			onClick={(index) => this.openStep(index)}
+			onClick={() => this.openStep(index)}
 			> step #{index}</div>);
 		} );
 
