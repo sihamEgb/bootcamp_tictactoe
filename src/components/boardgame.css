@@ -1,0 +1,14 @@
+.board{
+	display: grid;
+  grid-template-columns: repeat(3, 3rem);
+  grid-template-rows: repeat(3, 30%);
+  grid-gap: 5px;
+}
+.cell{
+	text-align: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 2px;
+	margin: 1px;
+	background-color: red;
+}
