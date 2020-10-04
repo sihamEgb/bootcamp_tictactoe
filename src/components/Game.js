@@ -9,7 +9,13 @@ class Game extends React.Component{
 		this.signs = ['O','X'];
 
 		this.state = {
-			board : [null,null,null,null,null,null,null,null,null],
+			
+			history: [
+				{
+					board : [null,null,null,null,null,null,null,null,null]
+				}
+			],
+			stepIndex: 0,
 			// board : [0,1,2,3,4,5,6,7,8],
 			currentPlayerIndex: 0,
 			isGameFinished:false,
@@ -24,22 +30,33 @@ class Game extends React.Component{
 			{
 				return;
 			}
-	
-			const newBoard = this.state.board;
+			// shallow copy array
+			const history = this.state.history.slice(0,this.state.stepIndex+1);
+			// most updated board
+			const current = history[history.length-1];
+			const newBoard = current.board.slice();
+			// console.log("history",newBoard);
+
 			newBoard[cellId] = this.signs[this.state.currentPlayerIndex];
 			this.setState({
-				board:newBoard,
+				history: history.concat([
+					{board:newBoard}
+				]),
 				currentPlayerIndex:(this.state.currentPlayerIndex+1)%2,	
+				stepIndex: history.length,
+				// board:newBoard,
+			},() => {
+				this.isGameFinished();
 			});
 			
-			this.isGameFinished();
 			
 		}
 
 		
-		getWinner = () => {
+		getWinner = (board) => {
 	// check row
-	const board = this.state.board;
+	// const current = this.state.history[this.state.stepIndex];
+	// const board = current.board;
 	if (board[0] && (board[0] === board[1]) && (board[0] === board[2])) {
 			return board[0];
 	}
@@ -74,9 +91,12 @@ class Game extends React.Component{
 }
 
 areAllCellsTaken = () => {
+	const current = this.state.history[this.state.stepIndex];
+	const board = current.board;
+	// debugger;
 	for(let i=0;i<9;i++)
 	{
-		if(this.state.board[i] === null)
+		if(board[i] === null)
 		{
 			return false;
 		}
@@ -87,28 +107,59 @@ areAllCellsTaken = () => {
 
 isGameFinished = () => {
 	console.log("is game finished called");
-	if(this.getWinner() !== null || this.areAllCellsTaken())
-	{
-		console.log("here",this.getWinner(),this.areAllCellsTaken());
+	if(this.areAllCellsTaken())
+	{	
+		// debugger;
+		console.log("all are taken");
 		this.setState({isGameFinished:true});
+		return true;
 	}
+	const current = this.state.history[this.state.stepIndex];
+	if(this.getWinner(current.board) !== null)
+	{
+		this.setState({isGameFinished:true});
+		return true;
+	}
+	return false;
 }
 
-	
+	openStep = (index) => {
+		this.setState({
+      stepIndex: index,
+			currentPlayerIndex:(index+1)%2,	
+		});
+		
+
+	}
 	render(){
-
-
 		
 		
 		const gameFinished = this.state.isGameFinished;
 		// console.log(this.state.isGameFinished);
-		const winner = this.getWinner();
+		const current = this.state.history[this.state.stepIndex];
+		const winner = this.getWinner(current.board);
 		const winnerName = gameFinished && winner? `the winner: ${winner}` : "no winner";
+		const steps = this.state.history.map( (steps,index) => {
+			return (<div
+			key={index}
+			onClick={(index) => this.openStep(index)}
+			> step #{index}</div>);
+		} );
+
+		/**
+		 * 
+		 * 	// key={index}
+			>
+				{step}
+
+		 */
+		
+
 		return(
 		<div className="gameContainer">
 			<div className="boardGame">
 				<Boardgame
-				boardGame = {this.state.board}
+				boardGame = {current.board}
 				onClick = {this.onCellClick}
 				>
 
@@ -116,10 +167,11 @@ isGameFinished = () => {
 			</div>
 			<div className="gameStatus">
 				<div>
-				next player = {this.signs[this.state.currentPlayerIndex]}
+				{gameFinished ? winnerName : `next player = ${this.signs[this.state.currentPlayerIndex]}`}
 				</div>
-				{gameFinished ? winnerName : ""}
-				
+			</div>
+			<div className="Prev Step">
+				{steps}
 			</div>
 		</div>
 
